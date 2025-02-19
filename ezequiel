@@ -1,1 +1,103 @@
-se vendió mercadería  por los montos mencionados y se pagó con las monedas mencionadas  lo cual deja un  pasivo de 108 millones de pesos argentinos por eqievelnte a la cotización actual de la moneda 
+public class CalculoPatrimonioNeto {
+
+    public static void main(String[] args) {
+        // Datos de la compra
+        double valorMercaderia = 202000000;
+
+        // Pagos
+        Pago[] pagos = {
+                new Pago(new Moneda(10000, 1230), "cheque"),
+                new Pago(new Moneda(50000, 1300), "caja"),
+                new Pago(new Moneda(2500, 5.70), "cheque"),
+                new Pago(new Moneda(2500, 5.70), "caja")
+        };
+
+        // Crear objeto Compra
+        Compra compra = new Compra(valorMercaderia, pagos);
+
+        // Calcular y mostrar resultados
+        System.out.println("Valor de la mercadería: " + valorMercaderia + " ARS");
+        System.out.println("Detalle de pagos:");
+        compra.mostrarDetallePagos();
+        System.out.println("Pasivo total: " + compra.calcularPasivo() + " ARS");
+        System.out.println("Patrimonio neto: " + compra.calcularPatrimonioNeto() + " ARS");
+    }
+
+    // Clase Moneda
+    static class Moneda {
+        private double valor;
+        private double cotizacion;
+
+        public Moneda(double valor, double cotizacion) {
+            this.valor = valor;
+            this.cotizacion = cotizacion;
+        }
+
+        public double calcularValorEnPesos() {
+            return valor * cotizacion;
+        }
+
+        public double getValor() {
+            return valor;
+        }
+
+        public double getCotizacion() {
+            return cotizacion;
+        }
+    }
+
+    // Clase Pago
+    static class Pago {
+        private Moneda moneda;
+        private String tipoPago; // "cheque" o "caja"
+
+        public Pago(Moneda moneda, String tipoPago) {
+            this.moneda = moneda;
+            this.tipoPago = tipoPago;
+        }
+
+        public double calcularValorEnPesos() {
+            return moneda.calcularValorEnPesos();
+        }
+
+        public String getTipoPago() {
+            return tipoPago;
+        }
+
+        public Moneda getMoneda() {
+            return moneda;
+        }
+    }
+
+    // Clase Compra
+    static class Compra {
+        private double valorMercaderia;
+        private Pago[] pagos;
+
+        public Compra(double valorMercaderia, Pago[] pagos) {
+            this.valorMercaderia = valorMercaderia;
+            this.pagos = pagos;
+        }
+
+        public double calcularPasivo() {
+            double pasivo = 0;
+            for (Pago pago : pagos) {
+                pasivo += pago.calcularValorEnPesos();
+            }
+            return pasivo;
+        }
+
+        public double calcularPatrimonioNeto() {
+            return valorMercaderia - calcularPasivo();
+        }
+
+        public void mostrarDetallePagos() {
+            for (Pago pago : pagos) {
+                System.out.println("Pago: " + pago.getMoneda().getValor() + " " +
+                        (pago.getMoneda().getCotizacion() == 1 ? "ARS" :
+                                (pago.getMoneda().getCotizacion() == 1230 || pago.getMoneda().getCotizacion() == 1300 ? "USD" : "BRL")) +
+                        " (" + pago.getTipoPago() + ") - " + pago.calcularValorEnPesos() + " ARS");
+            }
+        }
+    }
+}
