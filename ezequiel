@@ -1,103 +1,53 @@
-public class CalculoPatrimonioNeto {
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculadora Contable</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Calculadora Contable</h1>
+    <div id="input-container">
+        <label for="usd1">Dólares (10000 x 1230):</label>
+        <input type="number" id="usd1" value="10000">
+        <label for="usd2">Dólares (50000 x 1300):</label>
+        <input type="number" id="usd2" value="50000">
+        <label for="reales">Reales (2500 x 5.70):</label>
+        <input type="number" id="reales" value="2500">
+        <label for="cuentasPagar">Cuentas por Pagar:</label>
+        <input type="number" id="cuentasPagar" value="124685750">
+        <button id="calcular">Calcular</button>
+    </div>
+    <div id="resultado"></div>
+    <script src="script.js"></script>
+</body>
+</html>
+document.getElementById('calcular').addEventListener('click', function() {
+    const usd1 = parseFloat(document.getElementById('usd1').value);
+    const usd2 = parseFloat(document.getElementById('usd2').value);
+    const reales = parseFloat(document.getElementById('reales').value);
+    const cuentasPagar = parseFloat(document.getElementById('cuentasPagar').value);
 
-    public static void main(String[] args) {
-        // Datos de la compra
-        double valorMercaderia = 202000000;
+    const arsUsd1 = usd1 * 1230;
+    const arsUsd2 = usd2 * 1300;
+    const arsReales = reales * 5.70;
+    const totalPagado = arsUsd1 + arsUsd2 + arsReales;
+    const chequeCaja = totalPagado / 2;
+    const totalCompra = totalPagado + cuentasPagar;
 
-        // Pagos
-        Pago[] pagos = {
-                new Pago(new Moneda(10000, 1230), "cheque"),
-                new Pago(new Moneda(50000, 1300), "caja"),
-                new Pago(new Moneda(2500, 5.70), "cheque"),
-                new Pago(new Moneda(2500, 5.70), "caja")
-        };
+    const resultadoDiv = document.getElementById('resultado');
+    resultadoDiv.innerHTML = `
+        <p>Total en USD (ARS): ${arsUsd1 + arsUsd2} ARS</p>
+        <p>Total en Reales (ARS): ${arsReales} ARS</p>
+        <p>Pago con Cheque/Caja: ${chequeCaja} ARS</p>
+        <p>Cuentas por Pagar: ${cuentasPagar} ARS</p>
+        <p>Total de la Compra: ${totalCompra} ARS</p>
+    `;
+});
+#input-container {
+    margin-bottom: 20px;
+}
 
-        // Crear objeto Compra
-        Compra compra = new Compra(valorMercaderia, pagos);
-
-        // Calcular y mostrar resultados
-        System.out.println("Valor de la mercadería: " + valorMercaderia + " ARS");
-        System.out.println("Detalle de pagos:");
-        compra.mostrarDetallePagos();
-        System.out.println("Pasivo total: " + compra.calcularPasivo() + " ARS");
-        System.out.println("Patrimonio neto: " + compra.calcularPatrimonioNeto() + " ARS");
-    }
-
-    // Clase Moneda
-    static class Moneda {
-        private double valor;
-        private double cotizacion;
-
-        public Moneda(double valor, double cotizacion) {
-            this.valor = valor;
-            this.cotizacion = cotizacion;
-        }
-
-        public double calcularValorEnPesos() {
-            return valor * cotizacion;
-        }
-
-        public double getValor() {
-            return valor;
-        }
-
-        public double getCotizacion() {
-            return cotizacion;
-        }
-    }
-
-    // Clase Pago
-    static class Pago {
-        private Moneda moneda;
-        private String tipoPago; // "cheque" o "caja"
-
-        public Pago(Moneda moneda, String tipoPago) {
-            this.moneda = moneda;
-            this.tipoPago = tipoPago;
-        }
-
-        public double calcularValorEnPesos() {
-            return moneda.calcularValorEnPesos();
-        }
-
-        public String getTipoPago() {
-            return tipoPago;
-        }
-
-        public Moneda getMoneda() {
-            return moneda;
-        }
-    }
-
-    // Clase Compra
-    static class Compra {
-        private double valorMercaderia;
-        private Pago[] pagos;
-
-        public Compra(double valorMercaderia, Pago[] pagos) {
-            this.valorMercaderia = valorMercaderia;
-            this.pagos = pagos;
-        }
-
-        public double calcularPasivo() {
-            double pasivo = 0;
-            for (Pago pago : pagos) {
-                pasivo += pago.calcularValorEnPesos();
-            }
-            return pasivo;
-        }
-
-        public double calcularPatrimonioNeto() {
-            return valorMercaderia - calcularPasivo();
-        }
-
-        public void mostrarDetallePagos() {
-            for (Pago pago : pagos) {
-                System.out.println("Pago: " + pago.getMoneda().getValor() + " " +
-                        (pago.getMoneda().getCotizacion() == 1 ? "ARS" :
-                                (pago.getMoneda().getCotizacion() == 1230 || pago.getMoneda().getCotizacion() == 1300 ? "USD" : "BRL")) +
-                        " (" + pago.getTipoPago() + ") - " + pago.calcularValorEnPesos() + " ARS");
-            }
-        }
-    }
+label, input {
+    display: block;
+    margin-bottom: 5px;
 }
