@@ -1,48 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Calculadora Contable</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>Calculadora Contable</h1>
-    <div id="input-container">
-        <label for="usd1">Dólares (10000 x 1230):</label>
-        <input type="number" id="usd1" value="10000">
-        <label for="usd2">Dólares (50000 x 1300):</label>
-        <input type="number" id="usd2" value="50000">
-        <label for="reales">Reales (2500 x 5.70):</label>
-        <input type="number" id="reales" value="2500">
-        <label for="cuentasPagar">Cuentas por Pagar:</label>
-        <input type="number" id="cuentasPagar" value="124685750">
-        <button id="calcular">Calcular</button>
-    </div>
-    <div id="resultado"></div>
-    <script src="script.js"></script>
-</body>
-</html>
-document.getElementById('calcular').addEventListener('click', function() {
-    const usd1 = parseFloat(document.getElementById('usd1').value);
-    const usd2 = parseFloat(document.getElementById('usd2').value);
-    const reales = parseFloat(document.getElementById('reales').value);
-    const cuentasPagar = parseFloat(document.getElementById('cuentasPagar').value);
 
-    const arsUsd1 = usd1 * 1230;
-    const arsUsd2 = usd2 * 1300;
-    const arsReales = reales * 5.70;
-    const totalPagado = arsUsd1 + arsUsd2 + arsReales;
-    const chequeCaja = totalPagado / 2;
-    const totalCompra = totalPagado + cuentasPagar;
-
-    const resultadoDiv = document.getElementById('resultado');
-    resultadoDiv.innerHTML = `
-        <p>Total en USD (ARS): ${arsUsd1 + arsUsd2} ARS</p>
-        <p>Total en Reales (ARS): ${arsReales} ARS</p>
-        <p>Pago con Cheque/Caja: ${chequeCaja} ARS</p>
-        <p>Cuentas por Pagar: ${cuentasPagar} ARS</p>
-        <p>Total de la Compra: ${totalCompra} ARS</p>
-    `;
-});
 #input-container {
     margin-bottom: 20px;
 }
