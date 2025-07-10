@@ -1,145 +1,99 @@
-# ===============================
-# Librerías necesarias
-# ===============================
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.metrics import accuracy_score, classification_report, mean_squared_error, r2_score
-from sklearn.preprocessing import StandardScaler
-
-# ===============================
-# Simulación de inflación anual por país (%)
-# ===============================
-inflacion_dict = {
-    'Argentina': 120.0,
-    'Italia': 5.2,
-    'Paraguay': 4.5,
-    'España': 3.9,
-    'Uruguay': 5.1,
-    'Alemania': 4.0
-}
-
-# ===============================
-# Cargar datos de ejemplo
-# ===============================
-# Simulamos un DataFrame de clientes
+# ===================================
+# Parámetros base
+# ===================================
 np.random.seed(42)
-n = 500
+
+años = np.arange(2025, 2025 + 20)
+inflacion_media = 5.0  # 5% anual
+salario_base = 200
+gasto_cliente_base = 10  # gasto anual por cliente
+
+# Ajustes:
+# - Salario ajustado: 2× inflación
+# - Factura ajustada: +1/3 de inflación
+# - Plan mínimo: +1% anual
+
+salarios = []
+facturas = []
+gasto_cliente = []
+
+salario_actual = salario_base
+factura_actual = gasto_cliente_base
+gasto_actual = gasto_cliente_base
+
+for año in años:
+    # Simular inflación del año
+    inflacion = inflacion_media
+    
+    # Ajustar salario para no perder empleados
+    ajuste_salario = salario_actual * (1 + 2 * inflacion / 100)
+    salarios.append(ajuste_salario)
+    salario_actual = ajuste_salario
+    
+    # Ajustar factura para no perder clientes
+    ajuste_factura = factura_actual * (1 + (inflacion / 3) / 100)
+    
+    # Plan mínimo: subir 1% anual
+    ajuste_factura = max(ajuste_factura, factura_actual * 1.01)
+    facturas.append(ajuste_factura)
+    factura_actual = ajuste_factura
+    
+    # Gasto del cliente: base + probabilidad de aumento
+    gasto_probabilidad = np.random.rand()
+    if gasto_probabilidad < 0.5:  # 50% chance de aumento
+        gasto_actual = gasto_actual * (1 + inflacion / 100)
+    else:
+        # Si no se ajusta bien, alta probabilidad de baja: el gasto se mantiene
+        gasto_actual = gasto_actual
+    gasto_cliente.append(gasto_actual)
+
+# ===================================
+# DataFrame de resultados
+# ===================================
 df = pd.DataFrame({
-    'Edad': np.random.randint(18, 65, size=n),
-    'Gasto_Mes_Anterior': np.random.uniform(50, 500, size=n),
-    'Fecha_Ingreso': pd.date_range(start='2010-01-01', periods=n, freq='D'),
-    'Pais': np.random.choice(list(inflacion_dict.keys()), size=n),
-    'Precio_Pagado': np.random.uniform(20, 200, size=n),
-    'Afectado_Aumento': np.random.choice([0, 1], size=n),
-    'Churn': np.random.choice([0, 1], size=n),
-    'ID_Servicio_Comprado': np.random.choice(['A', 'B', 'C'], size=n)
+    'Año': años,
+    'Salario_Ajustado': salarios,
+    'Factura_Ajustada': facturas,
+    'Gasto_Cliente': gasto_cliente
 })
 
-# ===============================
-# Preprocesamiento de Datos
-# ===============================
-df['Antiguedad_Dias'] = (pd.to_datetime('today') - pd.to_datetime(df['Fecha_Ingreso'])).dt.days
-df['Inflacion_Pais'] = df['Pais'].map(inflacion_dict)
-df['Inflacion_Ajustada'] = df['Inflacion_Pais'] * (1 - (df['Antiguedad_Dias'] / df['Antiguedad_Dias'].max()))
-df['Categoria_Edad'] = pd.cut(df['Edad'], bins=[18, 30, 50, 100], labels=['18-30', '31-50', '51+'])
+# ===================================
+# Recomendación general
+# ===================================
+print("\n📊 RECOMENDACIÓN EMPRESARIAL:")
+print("- Mantener ajuste salarial al doble de inflación para no perder empleados.")
+print("- Subir facturas al menos 1% anual, ideal 1/3 de la inflación para sostener margen.")
+print("- Mejorar precio al cliente y bajar costos internos para expandirse.")
+print("- Gasto del cliente promedio parte de $10 anuales y puede crecer hasta 20% en 20 años.")
 
-# Variables dummies
-df_final_transformado = pd.get_dummies(df, columns=['Pais', 'Categoria_Edad', 'ID_Servicio_Comprado'], drop_first=True)
-
-# ===============================
-# Variables de interés para churn
-# ===============================
-df_ml = df_final_transformado[[
-    'Edad', 'Gasto_Mes_Anterior', 'Antiguedad_Dias',
-    'Inflacion_Ajustada', 'Precio_Pagado', 'Afectado_Aumento', 'Churn'
-]]
-
-# ===============================
-# Entrenar modelo de Churn
-# ===============================
-X = df_ml.drop('Churn', axis=1)
-y = df_ml['Churn']
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-model = LogisticRegression()
-model.fit(X_train_scaled, y_train)
-
-y_pred = model.predict(X_test_scaled)
-
-accuracy = accuracy_score(y_test, y_pred)
-print(f'Accuracy del modelo de Churn: {accuracy * 100:.2f}%')
-print('\nReporte de clasificación:')
-print(classification_report(y_test, y_pred))
-
-# ===============================
-# Proyección de inflación a 20 años
-# ===============================
-# Promedio de inflación base
-inflacion_media = np.mean(list(inflacion_dict.values()))
-print(f'\nInflación promedio base: {inflacion_media:.2f}%')
-
-# Simulación de inflación acumulada año a año (simple)
-años = np.arange(2025, 2025 + 20)
-inflacion_anual = []
-valor = 100  # Base 100
-
-for _ in años:
-    valor = valor * (1 + inflacion_media / 100)
-    inflacion_anual.append(valor)
-
-# ===============================
-# Regresión lineal para proyectar inflación
-# ===============================
-X_years = años.reshape(-1, 1)
-y_inflacion = inflacion_anual
-
-reg = LinearRegression()
-reg.fit(X_years, y_inflacion)
-
-pred_inflacion = reg.predict(X_years)
-
-# Métricas de regresión
-rmse = mean_squared_error(y_inflacion, pred_inflacion, squared=False)
-r2 = r2_score(y_inflacion, pred_inflacion)
-
-print(f'\nProyección de inflación: RMSE={rmse:.2f}, R2={r2:.4f}')
-print(f'Pendiente: {reg.coef_[0]:.2f}, Intercepto: {reg.intercept_:.2f}')
-
-# ===============================
-# Gráfico de inflación proyectada
-# ===============================
+# ===================================
+# Visualizaciones
+# ===================================
 plt.figure(figsize=(12, 6))
-plt.plot(años, y_inflacion, label='Inflación simulada', marker='o')
-plt.plot(años, pred_inflacion, label='Regresión lineal', linestyle='--')
-plt.title('Proyección de Inflación a 20 años')
+plt.plot(df['Año'], df['Salario_Ajustado'], label='Salario Ajustado (2× Inflación)')
+plt.plot(df['Año'], df['Factura_Ajustada'], label='Factura Ajustada (1/3 Inflación, 1% min)')
+plt.plot(df['Año'], df['Gasto_Cliente'], label='Gasto Cliente')
+plt.title('Proyección Salarial, Factura y Gasto Cliente (20 años)')
 plt.xlabel('Año')
-plt.ylabel('Índice de inflación acumulada')
+plt.ylabel('USD')
 plt.legend()
+plt.grid(True)
 plt.show()
 
-# ===============================
-# Guardar coeficientes para uso futuro
-# ===============================
-coef_df = pd.DataFrame({
-    'Característica': X.columns,
-    'Coeficiente': model.coef_[0]
-}).sort_values(by='Coeficiente', ascending=False)
+# ===================================
+# Facturación total por cliente acumulada
+# ===================================
+facturacion_total = df['Factura_Ajustada'].sum()
+print(f'\n💵 Facturación total estimada por cliente durante 20 años: USD {facturacion_total:.2f}')
 
-print('\nImportancia de las características para Churn:')
-print(coef_df)
+# ===================================
+# Guardar a CSV (opcional)
+# ===================================
+df.to_csv('proyeccion_facturacion_clientes_20_anos.csv', index=False)
+print("Archivo guardado: proyeccion_facturacion_clientes_20_anos.csv")
 
-plt.figure(figsize=(10, 6))
-sns.barplot(x='Coeficiente', y='Característica', data=coef_df)
-plt.title('Importancia de las características en la predicción de Churn')
-plt.show()
 
